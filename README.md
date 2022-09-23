@@ -10,9 +10,37 @@ Validates `XML` documents against a W3C XML Schema (`XSD`) from the comfort of y
 ## Building
 
 > On POSIX
-
 ```sh
+########################################
+# 1: Install emscripten
+########################################
+-> https://emscripten.org/docs/getting_started/downloads.html
+# remomeber to activate latest/path before step 2
+
+
+########################################
+# 2: Get libxml 
+########################################
 git submodule update --init --recursive
+
+# Currently @ 21b24b51 Release v2.10.2
+# To update -> cd submodule; git checkout <some_commit_hash>
+
+
+########################################
+# 3: Patch libxml2/Makefile.am
+########################################
+# manually patch libxml2/Makefile.am
+# xmlcatalog_SOURCES to this
+xmlcatalog_SOURCES=xmlcatalog.c buf.c chvalid.c dict.c entities.c encoding.c error.c xmlmodule.c \
+		     globals.c hash.c list.c parser.c parserInternals.c relaxng.c xmlwriter.c legacy.c pattern.c xmlsave.c schematron.c xzlib.c \
+		     SAX2.c threads.c tree.c uri.c valid.c xmlIO.c xmlschemas.c xmlschemastypes.c xmlunicode.c xmlreader.c \
+		     xmlmemory.c xmlstring.c xmlvalidate.c SAX.c xlink.c HTMLparser.c HTMLtree.c debugXML.c xpath.c xpointer.c xinclude.c nanohttp.c nanoftp.c catalog.c c14n.c xmlregexp.c
+
+
+########################################
+# 4: Run script
+########################################
 ./emmake.sh
 ```
 
@@ -22,13 +50,12 @@ This is what `emmake.sh` does for you on POSIX:
 
 1. *copy* `xmlvalidate.c` into the `./libxml2` directory
 2. *change working directory* to `./libxml2`
-3. *patch* `Makefile.am` to include `xmlvalidate.c` in its `libxml2_la_SOURCES`
-4. `emconfigure ./autogen.sh --with-minimum --with-schemas --disable-shared`
+3. `emconfigure ./autogen.sh --with-minimum --with-schemas --disable-shared`
 
    If your system does not provide a Bourne shell, consider using
    `autoreconf --install` in place of `./autogen.sh` and crossing your fingers.
-5. `emmake make`
-6. *compile* the new object file `xmlvalidate.o` to `xmlvalidate.js`:
+4. `emmake make`
+5. *compile* the new object file `xmlvalidate.o` to `xmlvalidate.js`:
    
    ```sh
    OBJECTS="SAX.o entities.o encoding.o error.o parserInternals.o  \
@@ -40,7 +67,6 @@ This is what `emmake.sh` does for you on POSIX:
        xmlreader.o relaxng.o dict.o SAX2.o \
        xmlwriter.o legacy.o chvalid.o pattern.o xmlsave.o \
        xmlmodule.o schematron.o xzlib.o"
-
    emcc -Os xmlvalidate.o $OBJECTS -o xmlvalidate.js \
    -s ALLOW_MEMORY_GROWTH=1 \
    -s EXPORTED_FUNCTIONS='["_validate", "_init"]' \
@@ -48,8 +74,8 @@ This is what `emmake.sh` does for you on POSIX:
    -s 'ENVIRONMENT=worker' \
    --pre-js ../pre.js --post-js ../post.js
    ```
-7. *move* the resulting `xmlvalidate.wasm` and `xlvalidate.js` to `../dist/`
-8. *change working directory* to `..`
+6. *move* the resulting `xmlvalidate.wasm` and `xlvalidate.js` to `../dist/`
+7. *change working directory* to `..`
 
 Replicate these steps manually in order to compile `xmlvalidate.js` on a
 non-POSIX-compliant operating system.

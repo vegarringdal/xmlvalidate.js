@@ -1,6 +1,6 @@
 (function() {
   Module.ready = new Promise(function (resolve, reject) {
-    addOnPreMain(() => {
+    addOnInit(() => {
       var init = Module.cwrap('init', 'number', ['string', 'number', 'string']);
       var validate = Module.cwrap('validate', 'number', ['number', 'string']);
 

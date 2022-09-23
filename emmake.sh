@@ -4,7 +4,7 @@ cp xmlvalidate.c libxml2
 
 cd libxml2
 
-patch -N < ../Makefile.am.patch
+# patch -N < ../Makefile.am.patch -> do manual update
 [ -f ./Makefile ] || emconfigure ./autogen.sh --with-minimum --with-schemas --disable-shared
 emmake make
 
@@ -18,7 +18,7 @@ OBJECTS="SAX.o entities.o encoding.o error.o parserInternals.o  \
 		xmlwriter.o legacy.o chvalid.o pattern.o xmlsave.o \
 		xmlmodule.o schematron.o xzlib.o"
 
-emcc -Os xmlvalidate.o $OBJECTS -o xmlvalidate.js -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_FUNCTIONS='["_validate", "_init"]' -s EXPORTED_RUNTIME_METHODS='["cwrap"]' -s 'ENVIRONMENT=worker' --pre-js ../pre.js --post-js ../post.js
+emcc -Os xmlvalidate.o $OBJECTS -o xmlvalidate.js -s ALLOW_MEMORY_GROWTH=1 -s EXPORTED_FUNCTIONS='["_validate", "_init", "_malloc", "_free"]' -s EXPORTED_RUNTIME_METHODS='["cwrap"]' -s 'ENVIRONMENT=worker' --pre-js ../pre.js --post-js ../post.js
 
 mv xmlvalidate.wasm xmlvalidate.js ../dist
 cd ..
